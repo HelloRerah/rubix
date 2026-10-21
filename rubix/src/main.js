@@ -1,5 +1,7 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { FontLoader } from 'three/examples/jsm/loaders/FontLoader.js';
+import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js';
 
 // ---------- 1. Scene, camera, renderer ----------
 const scene = new THREE.Scene();
@@ -73,6 +75,46 @@ for (let x = -1; x <= 1; x++) {
 }
 
 scene.add(cube);
+
+// ---------- Help text (TextGeometry) ----------
+const helpLines = [
+  'CONTROLS',
+  'R  -  Right face',
+  'L  -  Left face',
+  'U  -  Up face',
+  'D  -  Down face',
+  'F  -  Front face',
+  'B  -  Back face',
+  '',
+  'Shift + key = reverse',
+  'Drag = rotate view',
+  'Scroll = zoom',
+];
+
+const helpGroup = new THREE.Group();
+scene.add(camera);
+camera.add(helpGroup);
+helpGroup.position.set(-5.5, 2, -10);
+
+new FontLoader().load('/fonts/helvetiker_regular.typeface.json', (font) => {
+  helpLines.forEach((line, i) => {
+    if (line === '') return;
+
+    const geometry = new TextGeometry(line, {
+      font: font,
+      size: 0.22,
+      depth: 0.02,
+    });
+
+    const material = new THREE.MeshBasicMaterial({
+      color: i === 0 ? 0xffd500 : 0xeeeeee,
+    });
+
+    const mesh = new THREE.Mesh(geometry, material);
+    mesh.position.y = -i * 0.4;
+    helpGroup.add(mesh);
+  });
+});
 
 // ---------- 4. Layer helpers ----------
 // All cubies where one coordinate equals a value (e.g. right face: x === 1)
@@ -148,6 +190,7 @@ window.addEventListener('keydown', (e) => {
 function animate() {
   requestAnimationFrame(animate);
   controls.update();
+  // helpGroup.quaternion.copy(camera.quaternion); // text always faces you
   renderer.render(scene, camera);
 }
 animate();
